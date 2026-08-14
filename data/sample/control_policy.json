@@ -1,0 +1,36 @@
+{
+  "rules": [
+    {
+      "rule_id": "TRADE_NOTIONAL_LIMIT",
+      "description": "Single automated trade notional must stay below the pre-trade review threshold.",
+      "threshold": 250000,
+      "unit": "USD notional",
+      "severity": "high",
+      "action_type": "quote_size_reduction"
+    },
+    {
+      "rule_id": "INVENTORY_LIMIT",
+      "description": "Marked inventory notional must not exceed the desk-level symbol exposure limit.",
+      "threshold": 1,
+      "unit": "position notional over configured symbol limit",
+      "severity": "critical",
+      "action_type": "manual_hedge_review"
+    },
+    {
+      "rule_id": "RECON_BREAK_QTY",
+      "description": "Venue settlement breaks above tolerance must be opened as reconciliation cases.",
+      "threshold": 0.05,
+      "unit": "asset quantity",
+      "severity": "medium",
+      "action_type": "ops_reconciliation_case"
+    },
+    {
+      "rule_id": "FEE_BPS_OUTLIER",
+      "description": "Execution fee bps should remain within expected venue maker/taker economics.",
+      "threshold": 4.5,
+      "unit": "basis points",
+      "severity": "medium",
+      "action_type": "fee_schedule_review"
+    }
+  ]
+}

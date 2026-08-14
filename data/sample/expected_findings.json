@@ -1,0 +1,8 @@
+{
+  "expected_finding_ids": [
+    "F-TRADE-T-1005",
+    "F-INV-ETH-PERP",
+    "F-RECON-T-1003",
+    "F-FEE-T-1003"
+  ]
+}

@@ -1,0 +1,4 @@
+symbol,quantity,mark_price,limit_quantity,limit_notional
+BTC-PERP,18.5,64280,25,1600000
+ETH-PERP,2180,3545,2000,7000000
+SOL-PERP,4200,141.9,8000,1150000

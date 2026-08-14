@@ -1,0 +1,7 @@
+trade_id,expected_quantity,settled_quantity,status,reason
+T-1001,0.8,0.8,matched,none
+T-1002,22,22,matched,none
+T-1003,1250,1180,break,venue_partial_settlement
+T-1004,1.2,1.2,matched,none
+T-1005,180,180,matched,none
+T-1006,320,320,matched,none
