@@ -4,7 +4,7 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
-from .models import Action, AgentState, Finding, Severity, ToolCall
+from .models import Action, AgentState, Finding, RoutingDecision, Severity, ToolCall
 
 
 def _severity_label(severity: Severity) -> str:
@@ -25,9 +25,20 @@ def trace_to_dict(call: ToolCall) -> dict[str, object]:
     return asdict(call)
 
 
+def routing_to_dict(decision: RoutingDecision) -> dict[str, object]:
+    return {
+        "intent": decision.intent.value,
+        "symbol": decision.symbol,
+        "requested_action": decision.requested_action,
+        "confidence": decision.confidence,
+        "rationale": decision.rationale,
+    }
+
+
 def write_json_audit(state: AgentState, output_path: Path) -> None:
     payload = {
         "metrics": state.metrics,
+        "routing_decision": routing_to_dict(state.routing_decision) if state.routing_decision else None,
         "findings": [finding_to_dict(finding) for finding in state.findings],
         "actions": [action_to_dict(action) for action in state.actions],
         "tool_trace": [trace_to_dict(call) for call in state.tool_trace],
@@ -52,9 +63,25 @@ def write_markdown_report(state: AgentState, output_path: Path) -> None:
             f"with {len(approval_required)} market-impacting actions held for human approval."
         ),
         "",
-        "## Findings",
-        "",
     ]
+
+    if state.routing_decision:
+        decision = state.routing_decision
+        lines.extend(
+            [
+                "## Request Routing",
+                "",
+                f"- Intent: `{decision.intent.value}`",
+                f"- Symbol scope: `{decision.symbol or 'ALL'}`",
+                f"- Requested action: `{decision.requested_action}`",
+                f"- Confidence: `{decision.confidence:.2f}`",
+                f"- Rationale: {decision.rationale}",
+                "- Execution boundary: The current copilot analyzes and recommends only; it never places trades.",
+                "",
+            ]
+        )
+
+    lines.extend(["## Findings", ""])
 
     for finding in state.findings:
         lines.extend(

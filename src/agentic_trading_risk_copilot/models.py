@@ -13,6 +13,16 @@ class Severity(str, Enum):
     CRITICAL = "critical"
 
 
+class RiskIntent(str, Enum):
+    FULL_RISK_SCAN = "full_risk_scan"
+    TRADE_RISK_REVIEW = "trade_risk_review"
+    TRADE_NOTIONAL_REVIEW = "trade_notional_review"
+    INVENTORY_RISK_REVIEW = "inventory_risk_review"
+    RECONCILIATION_REVIEW = "reconciliation_review"
+    FEE_ANOMALY_REVIEW = "fee_anomaly_review"
+    UNSUPPORTED = "unsupported"
+
+
 @dataclass(frozen=True)
 class Trade:
     trade_id: str
@@ -97,6 +107,15 @@ class ToolCall:
     outputs: dict[str, Any]
 
 
+@dataclass(frozen=True)
+class RoutingDecision:
+    intent: RiskIntent
+    symbol: str | None
+    requested_action: str
+    confidence: float
+    rationale: str
+
+
 @dataclass
 class AgentState:
     trades: list[Trade]
@@ -107,6 +126,7 @@ class AgentState:
     actions: list[Action] = field(default_factory=list)
     tool_trace: list[ToolCall] = field(default_factory=list)
     metrics: dict[str, float] = field(default_factory=dict)
+    routing_decision: RoutingDecision | None = None
 
     def trace(self, tool_name: str, inputs: dict[str, Any], outputs: dict[str, Any]) -> None:
         self.tool_trace.append(ToolCall(tool_name=tool_name, inputs=inputs, outputs=outputs))

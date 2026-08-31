@@ -2,6 +2,7 @@
 
 ## AI Engineer / Agentic Systems
 
+- Integrated an optional OpenAI-compatible LLM intent router that converts natural-language risk requests into strictly validated intents and symbol scopes, dynamically selecting deterministic checks while preserving human-approval boundaries.
 - Built an agentic trading-risk copilot in Python that orchestrates specialist agents for risk monitoring, reconciliation breaks, root-cause analysis, control-action proposal, human-approval guardrails, audit logging, and evaluation.
 - Designed a reproducible multi-agent workflow over synthetic trading, position, ledger, and control-policy data; generated Markdown incident reports and JSON audit traces with precision/recall/F1 evaluation against labeled control findings.
 - Implemented tool-calling style agents for trade notional limits, inventory breaches, settlement breaks, and fee-bps anomalies, with market-impacting actions blocked behind human-in-the-loop approval gates.

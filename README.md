@@ -14,11 +14,13 @@ The copilot ingests synthetic trading operations data:
 - internal control policies
 - labeled expected findings for evaluation
 
-It then runs a deterministic multi-agent workflow:
+It can run either a deterministic full scan or an LLM-routed, scoped workflow:
 
 ```mermaid
 flowchart LR
-    A["Trading / Position / Ledger Data"] --> B["Supervisor Agent"]
+    U["Optional Natural-Language Request"] --> R["LLM Intent Router"]
+    R --> B["Supervisor Agent"]
+    A["Trading / Position / Ledger Data"] --> B
     C["Control Policy Store"] --> B
     B --> D["Risk Monitor Agent"]
     B --> E["Reconciliation Agent"]
@@ -49,12 +51,13 @@ Trading and risk teams increasingly need agentic systems that can support operat
 - reproducible evaluation
 - auditability for risk and compliance contexts
 
-The current implementation is standard-library Python and deterministic by design, so it can be cloned and run without API keys. It is LLM-ready, but the MVP keeps the reasoning path transparent and testable.
+The core implementation is standard-library Python and deterministic by design, so the default full scan runs without API keys. An optional LLM intent router can classify a natural-language request and select the relevant checks, while all calculations, action guardrails, and reporting remain deterministic and testable.
 
 ## Agents
 
 | Agent | Role |
 |---|---|
+| `LLM Intent Router` | Converts a natural-language request into a validated intent, symbol scope, and requested action. |
 | `RiskMonitorAgent` | Detects single-trade notional breaches, inventory limit breaches, and fee-bps outliers. |
 | `ReconciliationAgent` | Detects venue settlement and internal ledger breaks. |
 | `RootCauseAgent` | Maps findings to likely operational root causes. |
@@ -73,8 +76,8 @@ The current implementation is standard-library Python and deterministic by desig
 ## Quick Start
 
 ```bash
-python -m pip install -e .
-python -m agentic_trading_risk_copilot.cli --data data/sample --out reports
+python3 -m pip install -e .
+python3 -m agentic_trading_risk_copilot.cli --data data/sample --out reports
 ```
 
 Expected console output:
@@ -90,8 +93,38 @@ wrote=reports/audit_trace.json
 Run tests:
 
 ```bash
-python -m unittest discover -s tests -p "test_*.py"
+python3 -m unittest discover -s tests -p "test_*.py"
 ```
+
+## Optional LLM Intent Router
+
+The default command still runs every deterministic check. The recommended demo provider is Groq's OpenAI-compatible API with `openai/gpt-oss-20b`. Configure it with a newly created key; the prompt hides the key from terminal output and shell history:
+
+```bash
+make configure-llm
+make check-llm
+```
+
+This creates a local `.env` with owner-only file permissions. `.env` is ignored by Git, while `.env.example` contains only safe defaults. Shell environment variables take precedence over values in `.env`.
+
+Never paste a key into chat, source code, README files, screenshots, or commits. If a key is exposed, revoke it at the provider immediately and create a replacement.
+
+Then run a scoped request:
+
+```bash
+make llm-demo
+```
+
+The router can select one of these allow-listed intents:
+
+- `full_risk_scan`
+- `trade_risk_review`
+- `trade_notional_review`
+- `inventory_risk_review`
+- `reconciliation_review`
+- `fee_anomaly_review`
+
+The LLM never performs the numerical checks and never executes a trade. It only returns structured routing JSON; the application validates the intent and then calls deterministic tools. Requests to execute a market-impacting action remain recommendations behind the existing human-approval guardrails.
 
 ## Sample Output
 
@@ -123,6 +156,7 @@ The copilot turns those findings into operational actions. Market-impacting acti
 │   ├── data_loader.py
 │   ├── evaluation.py
 │   ├── guardrails.py
+│   ├── intent_router.py
 │   ├── models.py
 │   ├── reporting.py
 │   └── tools.py
@@ -132,9 +166,9 @@ The copilot turns those findings into operational actions. Market-impacting acti
 
 ## Design Choices
 
-### Deterministic first, LLM-ready second
+### Deterministic controls, bounded LLM routing
 
-The agent workflow is deterministic because risk and control systems need reproducibility. A production extension could add an LLM layer for analyst Q&A or report drafting, but the first version keeps detection, policy retrieval, action proposal, and evaluation explicit.
+The detector and action workflow is deterministic because risk and control systems need reproducibility. The optional LLM is restricted to intent routing through a small allowlist. A production extension could add policy RAG, analyst Q&A, or report drafting, but detection, authorization, and high-impact actions should remain explicit.
 
 ### Guardrails are part of the product
 
@@ -154,12 +188,15 @@ More resume variants are in [`docs/resume_bullets.md`](docs/resume_bullets.md).
 
 - Synthetic dataset, not live venue replay.
 - Local JSON policy retrieval, not vector-database RAG yet.
-- Deterministic agents, not live LLM calls.
+- The optional live LLM only routes intents; it does not yet plan multi-step tasks or choose arbitrary tools.
+- No persistent observe-act-replan loop or long-term memory.
 - No trading execution or automatic risk-limit changes by design.
 
 ## Next Improvements
 
-- Add optional LLM adapter for report drafting and analyst Q&A.
+- Expose detectors through function schemas or MCP tools for validated dynamic tool selection.
+- Add a bounded observe-act-replan loop with step, timeout, and cost limits.
+- Add LLM-assisted report drafting and analyst Q&A with structured output.
 - Add vector retrieval over control documents.
 - Add FastAPI endpoints and a small dashboard.
 - Add real exchange API ingestion or historical trading-log replay.
