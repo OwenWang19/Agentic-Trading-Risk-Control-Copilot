@@ -112,6 +112,7 @@ Allowed intents:
 - inventory_risk_review: review marked inventory exposure
 - reconciliation_review: review expected-versus-settled quantities
 - fee_anomaly_review: review execution fee-bps anomalies
+- policy_qa: answer a question about risk policies, controls, runbooks, or historical incidents
 - unsupported: the request is outside these capabilities or needs clarification
 
 Return one JSON object with exactly these fields:

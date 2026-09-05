@@ -130,6 +130,9 @@ class ControlActionAgent:
 class SupervisorAgent:
     name = "supervisor-agent"
 
+    def __init__(self, policy_rag_agent: object | None = None) -> None:
+        self.policy_rag_agent = policy_rag_agent
+
     def run(self, state: AgentState) -> AgentState:
         checks, include_reconciliation = _checks_for_route(state.routing_decision)
         symbol = state.routing_decision.symbol if state.routing_decision else None
@@ -145,9 +148,17 @@ class SupervisorAgent:
             state = agent.run(state, symbol=symbol)
             executed_agents.append(agent.name)
 
-        for agent in (RootCauseAgent(), ControlActionAgent()):
-            state = agent.run(state)
-            executed_agents.append(agent.name)
+        root_cause_agent = RootCauseAgent()
+        state = root_cause_agent.run(state)
+        executed_agents.append(root_cause_agent.name)
+
+        if self.policy_rag_agent is not None:
+            state = self.policy_rag_agent.run(state)
+            executed_agents.append(self.policy_rag_agent.name)
+
+        control_action_agent = ControlActionAgent()
+        state = control_action_agent.run(state)
+        executed_agents.append(control_action_agent.name)
 
         state.findings.sort(key=lambda finding: severity_rank(finding.severity), reverse=True)
         state.metrics["finding_count"] = float(len(state.findings))
@@ -180,4 +191,6 @@ def _checks_for_route(decision: RoutingDecision | None) -> tuple[set[str], bool]
         return {"fee_anomaly"}, False
     if decision.intent is RiskIntent.RECONCILIATION_REVIEW:
         return set(), True
+    if decision.intent is RiskIntent.POLICY_QA:
+        return set(), False
     raise ValueError(f"Unsupported route: {decision.intent.value}")

@@ -20,6 +20,7 @@ class RiskIntent(str, Enum):
     INVENTORY_RISK_REVIEW = "inventory_risk_review"
     RECONCILIATION_REVIEW = "reconciliation_review"
     FEE_ANOMALY_REVIEW = "fee_anomaly_review"
+    POLICY_QA = "policy_qa"
     UNSUPPORTED = "unsupported"
 
 
@@ -77,6 +78,24 @@ class PolicyRule:
     action_type: str
 
 
+@dataclass(frozen=True)
+class Citation:
+    chunk_id: str
+    document_id: str
+    title: str
+    section: str
+    score: float
+
+
+@dataclass
+class GroundedAnalysis:
+    answer: str
+    grounded: bool = True
+    root_cause_hypotheses: list[str] = field(default_factory=list)
+    recommended_next_steps: list[str] = field(default_factory=list)
+    citations: list[Citation] = field(default_factory=list)
+
+
 @dataclass
 class Finding:
     finding_id: str
@@ -88,6 +107,7 @@ class Finding:
     root_cause: str = "unassigned"
     recommended_action: str = "triage"
     approval_required: bool = False
+    rag_analysis: GroundedAnalysis | None = None
 
 
 @dataclass
@@ -127,6 +147,8 @@ class AgentState:
     tool_trace: list[ToolCall] = field(default_factory=list)
     metrics: dict[str, float] = field(default_factory=dict)
     routing_decision: RoutingDecision | None = None
+    user_request: str | None = None
+    knowledge_answer: GroundedAnalysis | None = None
 
     def trace(self, tool_name: str, inputs: dict[str, Any], outputs: dict[str, Any]) -> None:
         self.tool_trace.append(ToolCall(tool_name=tool_name, inputs=inputs, outputs=outputs))

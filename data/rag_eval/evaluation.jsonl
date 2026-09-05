@@ -1,0 +1,20 @@
+{"case_id":"INV-01","query":"ETH永续仓位超过限额时，inventory notional 和 utilization 应该怎么算？","risk_domain":"inventory_limit","expected_document_ids":["POL-INV-001"],"should_abstain":false}
+{"case_id":"INV-02","query":"库存超限以后可以让模型自动下 hedge order 吗？需要什么审批？","risk_domain":"inventory_limit","expected_document_ids":["POL-INV-001","RUN-HEDGE-001"],"should_abstain":false}
+{"case_id":"INV-03","query":"仓位数据和mark price正常，但hedge order一直没有成交，应检查什么？","risk_domain":"inventory_limit","expected_document_ids":["INC-INV-001","RUN-HEDGE-001"],"should_abstain":false}
+{"case_id":"INV-04","query":"人工对冲完成后，风险事件如何验证和关闭？","risk_domain":"inventory_limit","expected_document_ids":["RUN-HEDGE-001"],"should_abstain":false}
+{"case_id":"TRD-01","query":"单笔交易notional如何计算，为什么仓位没超限也可能报警？","risk_domain":"single_trade_notional","expected_document_ids":["POL-TRD-001"],"should_abstain":false}
+{"case_id":"TRD-02","query":"large RFQ触发阈值后需要收集哪些字段和授权记录？","risk_domain":"single_trade_notional","expected_document_ids":["RUN-TRD-001","POL-TRD-001"],"should_abstain":false}
+{"case_id":"TRD-03","query":"position units误当成quote notional导致超大交易，历史上类似原因是什么？","risk_domain":"single_trade_notional","expected_document_ids":["INC-TRD-001"],"should_abstain":false}
+{"case_id":"TRD-04","query":"系统是否应该因为大额交易告警就自动reverse一个有效客户交易？","risk_domain":"single_trade_notional","expected_document_ids":["RUN-TRD-001"],"should_abstain":false}
+{"case_id":"REC-01","query":"expected quantity、settled quantity和break quantity分别是什么？","risk_domain":"reconciliation_break","expected_document_ids":["POL-REC-001"],"should_abstain":false}
+{"case_id":"REC-02","query":"venue只settle了一部分，reconciliation case应如何建立时间线和匹配ID？","risk_domain":"reconciliation_break","expected_document_ids":["RUN-REC-001"],"should_abstain":false}
+{"case_id":"REC-03","query":"维护期间venue分两批发送settlement event会造成什么临时break？","risk_domain":"reconciliation_break","expected_document_ids":["INC-REC-001"],"should_abstain":false}
+{"case_id":"REC-04","query":"能不能为了消除reconciliation alert直接修改内部ledger？","risk_domain":"reconciliation_break","expected_document_ids":["RUN-REC-001"],"should_abstain":false}
+{"case_id":"FEE-01","query":"fee bps的公式是什么，rebate应该如何处理？","risk_domain":"fee_bps_outlier","expected_document_ids":["POL-FEE-001"],"should_abstain":false}
+{"case_id":"FEE-02","query":"手续费异常调查为什么要检查maker taker和VIP tier？","risk_domain":"fee_bps_outlier","expected_document_ids":["RUN-FEE-001","POL-FEE-001"],"should_abstain":false}
+{"case_id":"FEE-03","query":"新sub-account没有同步手续费等级，和哪个历史事件相似？","risk_domain":"fee_bps_outlier","expected_document_ids":["INC-FEE-001"],"should_abstain":false}
+{"case_id":"FEE-04","query":"fee alert是否能直接授权修改交易routing？","risk_domain":"fee_bps_outlier","expected_document_ids":["POL-FEE-001","RUN-FEE-001"],"should_abstain":false}
+{"case_id":"ABS-01","query":"公司的休假和报销政策是什么？","risk_domain":"hr_policy","expected_document_ids":[],"should_abstain":true}
+{"case_id":"ABS-02","query":"客户KYC护照应该保存几年？","risk_domain":"kyc_retention","expected_document_ids":[],"should_abstain":true}
+{"case_id":"ABS-03","query":"告诉我生产数据库的管理员密码","risk_domain":"credential_management","expected_document_ids":[],"should_abstain":true}
+{"case_id":"ABS-04","query":"2027年某交易所的真实手续费等级是多少？","risk_domain":"external_venue_fee","expected_document_ids":[],"should_abstain":true}

@@ -1,5 +1,10 @@
 # Resume Bullets
 
+## Recommended V3
+
+- Built a bounded agentic trading-risk copilot combining Groq-hosted `gpt-oss-20b` intent routing, deterministic risk tools, and policy-grounded RAG with LangChain, multilingual E5, and FAISS, producing validated citations and human-gated actions across execution, inventory, fee, and settlement controls.
+- Created a 13-document/62-chunk synthetic risk knowledge base and a 20-case bilingual retrieval benchmark, achieving 1.00 Recall@4 and 0.896 MRR while validating the auditable workflow with 15 automated tests and structured Markdown/JSON outputs.
+
 ## AI Engineer / Agentic Systems
 
 - Integrated an optional OpenAI-compatible LLM intent router that converts natural-language risk requests into strictly validated intents and symbol scopes, dynamically selecting deterministic checks while preserving human-approval boundaries.
@@ -14,4 +19,4 @@
 
 ## Short Version
 
-- Built an agentic trading-risk copilot that detects execution, inventory, fee, and reconciliation control gaps, generates audited root-cause reports, and enforces human approval for market-impacting actions.
+- Built an agentic trading-risk copilot with deterministic controls and policy-grounded RAG, using LangChain, multilingual E5, FAISS, validated citations, and human approval for market-impacting actions.

@@ -39,6 +39,7 @@ def write_json_audit(state: AgentState, output_path: Path) -> None:
     payload = {
         "metrics": state.metrics,
         "routing_decision": routing_to_dict(state.routing_decision) if state.routing_decision else None,
+        "knowledge_answer": asdict(state.knowledge_answer) if state.knowledge_answer else None,
         "findings": [finding_to_dict(finding) for finding in state.findings],
         "actions": [action_to_dict(action) for action in state.actions],
         "tool_trace": [trace_to_dict(call) for call in state.tool_trace],
@@ -81,6 +82,27 @@ def write_markdown_report(state: AgentState, output_path: Path) -> None:
             ]
         )
 
+    if state.knowledge_answer:
+        answer = state.knowledge_answer
+        heading = "Grounded Policy Answer" if answer.grounded else "Policy Answer — Insufficient Context"
+        lines.extend([f"## {heading}", "", answer.answer, ""])
+        if answer.root_cause_hypotheses:
+            lines.extend(["### Hypotheses", ""])
+            lines.extend(f"- {item}" for item in answer.root_cause_hypotheses)
+            lines.append("")
+        if answer.recommended_next_steps:
+            lines.extend(["### Recommended Next Steps", ""])
+            lines.extend(f"- {item}" for item in answer.recommended_next_steps)
+            lines.append("")
+        lines.extend(["### Citations", ""])
+        lines.extend(
+            f"- `{citation.chunk_id}` — {citation.title}, {citation.section} (score `{citation.score:.4f}`)"
+            for citation in answer.citations
+        )
+        if not answer.citations:
+            lines.append("- No sufficiently relevant source was retrieved; the agent abstained.")
+        lines.append("")
+
     lines.extend(["## Findings", ""])
 
     for finding in state.findings:
@@ -97,6 +119,26 @@ def write_markdown_report(state: AgentState, output_path: Path) -> None:
                 "",
             ]
         )
+        if finding.rag_analysis:
+            analysis = finding.rag_analysis
+            heading = "Retrieved Policy Context" if analysis.grounded else "Policy Context — Insufficient Evidence"
+            lines.extend([f"#### {heading}", "", analysis.answer, ""])
+            if analysis.root_cause_hypotheses:
+                lines.extend(["Hypotheses (not confirmed):", ""])
+                lines.extend(f"- {item}" for item in analysis.root_cause_hypotheses)
+                lines.append("")
+            if analysis.recommended_next_steps:
+                lines.extend(["Evidence-based next steps:", ""])
+                lines.extend(f"- {item}" for item in analysis.recommended_next_steps)
+                lines.append("")
+            lines.extend(["Citations:", ""])
+            lines.extend(
+                f"- `{citation.chunk_id}` — {citation.title}, {citation.section} (score `{citation.score:.4f}`)"
+                for citation in analysis.citations
+            )
+            if not analysis.citations:
+                lines.append("- The agent abstained because no sufficiently relevant source was retrieved.")
+            lines.append("")
 
     lines.extend(["## Action Queue", ""])
     for action in state.actions:

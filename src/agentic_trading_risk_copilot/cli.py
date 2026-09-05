@@ -17,6 +17,7 @@ def run(
     evaluate: bool = True,
     user_request: str | None = None,
     intent_router: IntentRouter | None = None,
+    policy_rag_agent: object | None = None,
 ) -> AgentState:
     dataset = load_dataset(data_dir)
     state = AgentState(
@@ -24,6 +25,7 @@ def run(
         positions=dataset["positions"],
         ledger=dataset["ledger"],
         policies=dataset["policies"],
+        user_request=user_request,
     )
 
     if user_request is not None:
@@ -42,7 +44,7 @@ def run(
             },
         )
 
-    state = SupervisorAgent().run(state)
+    state = SupervisorAgent(policy_rag_agent=policy_rag_agent).run(state)
 
     expected_path = data_dir / "expected_findings.json"
     full_scan = state.routing_decision is None or state.routing_decision.intent is RiskIntent.FULL_RISK_SCAN
@@ -70,6 +72,10 @@ def build_parser() -> argparse.ArgumentParser:
         type=str,
         help="Natural-language risk request. When supplied, the configured LLM routes the workflow.",
     )
+    parser.add_argument("--rag", action="store_true", help="Ground findings or policy Q&A in the local FAISS knowledge index")
+    parser.add_argument("--rag-index", type=Path, default=Path("data/rag_index"), help="FAISS index directory")
+    parser.add_argument("--knowledge", type=Path, default=Path("knowledge_base"), help="Knowledge document directory")
+    parser.add_argument("--build-rag-index", action="store_true", help="Build or replace the local RAG index before running")
     parser.add_argument(
         "--check-llm-config",
         action="store_true",
@@ -87,7 +93,28 @@ def main() -> None:
             print(f"llm_base_url={client.base_url}")
             print(f"llm_model={client.model}")
             return
-        state = run(args.data, args.out, evaluate=not args.no_eval, user_request=args.request)
+        policy_rag_agent = None
+        if args.rag or args.build_rag_index:
+            from .rag import FaissKnowledgeIndex, PolicyRAGAgent
+
+            if args.build_rag_index:
+                knowledge_index = FaissKnowledgeIndex.build(args.knowledge, args.rag_index)
+                print(
+                    f"rag_index=documents:{knowledge_index.manifest['document_count']} "
+                    f"chunks:{knowledge_index.manifest['chunk_count']} "
+                    f"dimension:{knowledge_index.manifest['embedding_dimension']}"
+                )
+            else:
+                knowledge_index = FaissKnowledgeIndex.load(args.rag_index)
+            if args.rag:
+                policy_rag_agent = PolicyRAGAgent(knowledge_index, OpenAICompatibleChatClient.from_env())
+        state = run(
+            args.data,
+            args.out,
+            evaluate=not args.no_eval,
+            user_request=args.request,
+            policy_rag_agent=policy_rag_agent,
+        )
     except IntentRoutingError as exc:
         raise SystemExit(f"intent-routing-error: {exc}") from exc
     if state.routing_decision:

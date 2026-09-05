@@ -4,15 +4,23 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentic-trading-risk-control-copilot"
-version = "0.1.0"
-description = "A reproducible AI-agent-style workflow for trading risk monitoring, reconciliation, and control-gap investigation."
+version = "0.2.0"
+description = "An auditable trading risk copilot with deterministic controls, LLM routing, and policy-grounded RAG."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Jiashu Wang" }]
 dependencies = []
 
+[project.optional-dependencies]
+rag = [
+    "faiss-cpu>=1.9,<2",
+    "langchain-text-splitters>=0.3,<2",
+    "sentence-transformers>=3,<6",
+]
+
 [project.scripts]
 trading-risk-copilot = "agentic_trading_risk_copilot.cli:main"
+trading-risk-rag-eval = "agentic_trading_risk_copilot.rag_evaluation:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

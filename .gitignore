@@ -13,3 +13,4 @@ build/
 reports/*.json
 reports/*.md
 !reports/.gitkeep
+data/rag_index/
